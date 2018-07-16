@@ -1,0 +1,43 @@
+---
+# tasks file for build_dev_webfrontend
+- hosts: "{{ host }}"
+  vars_prompt:
+    - name: ansible_password
+      prompt: "Enter your login password."
+      private: yes
+      when: ansible_password == ""
+  tasks:
+     - name: Include vars
+       include_vars: "../../../../group_vars/win.yml"
+       failed_when: path == ""
+     - name: Install Git
+       win_chocolatey:
+         name: git.install
+         version: 2.18.0
+     - name: Install NodeJS
+       win_chocolatey:
+         name: nodejs-lts
+         version: 8.11.3
+     - name: Install Visual Studio Code
+       win_chocolatey:
+         name: vscode
+         version: 1.25.1
+     - name: Delete the existing directory
+       win_file:
+         path: "{{ path }}/typescript_learning"
+         state: absent
+     - name: Clone the git repository
+       win_command: "git clone https://github.com/hs0x01/typescript_learning.git {{ path }}/typescript_learning"
+     - name: Execute npm install
+       win_command: "npm.cmd install"
+       args:
+         chdir: "{{ path }}/typescript_learning"
+     - name: Execute gulp compileAllTs
+       win_command: "npm.cmd run gulp compileAllTs"
+       args:
+         chdir: "{{ path }}/typescript_learning"
+     - name: Execute gulp compileAllLess
+       win_command: "npm.cmd run gulp compileAllLess"
+       args:
+         chdir: "{{ path }}/typescript_learning"
+
