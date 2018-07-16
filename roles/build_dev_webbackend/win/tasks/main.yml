@@ -1,0 +1,45 @@
+---
+# tasks file for build_dev_webbackend
+- hosts: "{{ host }}"
+  vars_prompt:
+    - name: ansible_password
+      prompt: "Enter your login password."
+      private: yes
+      when: ansible_password == ""
+  tasks:
+     - name: Include vars
+       include_vars: "../../../../group_vars/win.yml"
+       failed_when: path == ""
+     - name: Install Git
+       win_chocolatey:
+         name: git.install
+         version: 2.18.0
+     - name: Install JDK
+       win_chocolatey:
+         name: jdk8
+         version: 8.0.172
+     - name: Install Eclipse
+       win_chocolatey:
+         name: eclipse
+         version: 4.8.0
+     - name: Delete java_learning
+       win_file:
+         path: "{{ path }}/java_learning"
+         state: absent
+     - name: Create java_learning
+       win_file:
+         path: "{{ path }}/java_learning"
+         state: directory
+     - name: Download Tomcat
+       win_get_url:
+         url: "http://ftp.yz.yamagata-u.ac.jp/pub/network/apache/tomcat/tomcat-8/v8.5.32/bin/apache-tomcat-8.5.32.zip"
+         dest: "{{ path }}/java_learning/apache-tomcat-8.5.32.zip"
+     - name: Unarchive Tomcat zip
+       win_unzip:
+         src: "{{ path }}/java_learning/apache-tomcat-8.5.32.zip"
+         dest: "{{ path }}/java_learning"
+         delete_archive: yes
+     - name: Create link for Eclipse
+       win_command: "cmd.exe /c mklink \"{{ path }}/java_learning/eclipse\" \"C:/Program Files/Eclipse 4.8.0/eclipse/eclipse.exe\""
+         
+
